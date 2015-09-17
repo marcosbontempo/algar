@@ -160,9 +160,17 @@ def create_Session_Id():
     ret=ret+IDENTITY[2:16]
     return ret 
  
-def dump_AVP():
-    print "Oi"
-
+def dumpAVP(response):
+    # adequart a string recebida para montar um json
+    res=str(response)    
+    res=res.replace("\',", "\':") # susbtituir o separador por :, apenas para os campos
+    res=res.replace("(", "{") # trocar parentesis por chaves
+    res=res.replace(")", "}") # trocar parentesis por chaves
+    res=res.replace("u\'", "\'") # remover o u'
+    res=res.replace("\'", "\"") # mudar aspas simples para duplas
+    res=res.replace("\\", " ") # substituir as contrabarras que causam erros no loads
+    # retorna dumped json. Para ler e necessario dar o loads.
+    return res
 
 if __name__ == "__main__":
 
@@ -257,9 +265,18 @@ if __name__ == "__main__":
      print cmd
      print "Hop-by-Hop=",H.HopByHop,"End-to-End=",H.EndToEnd,"ApplicationId=",H.appId
      print "="*30  
+     message = "["
      for avp in avps:
 	# print "RAW AVP",avp
-      	print decodeAVP(avp)
+      	message=message+str(dumpAVP(decodeAVP(avp)))+", "
+    message=message+"]"
+    message=message.replace(", ]", " ]")
+    print message
+	
+    # Fazer na recepcao"
+    loaded_message = json.loads(str(message))
+    print str(loaded_message[0])
+
     print "-"*30    
     # From CCA we needed Destination-Host and Destination-Realm
     Capabilities_avps=splitMsgAVPs(CCA.msg)
