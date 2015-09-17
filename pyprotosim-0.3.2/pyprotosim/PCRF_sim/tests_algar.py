@@ -21,23 +21,14 @@
 #4)                     PCRF ---> SPR
 #5) PGW <--- CCA-I <--  PCRF <--- SPR (PCC rule)
 
-## RAR-U (Update) from PCRF to PGW (Push operation) will be sent using script test_push_RAR-U.py manually or (can be run from script)
-## with PCC Charging Remove old 'basic ' QoS profile and setting new PCC Charging-Install Rule and QoS profile settings 'highspeed'
-## PGW will reply with RAA 2001 reply
-
-
-#6) PCRF ---> RAR-U ---> PGW 
-                     
-#7) PCRF <--- RAA <---   PGW
-
 ## User is logged off and now sending CCR-T (Terminate) to PCRF, PCRF terminates and reply with 2001 Success 
 
-#8) PGW ---> CCR-T ---> PCRF
+#6) PGW ---> CCR-T ---> PCRF
 
 ## Disconnect Pear Request to PCRF and 2001 Success Answer and close session
 
-#9)  PGW ---> DPR ----> PCRF
-#10) PGW <--- DPA <---- PCRF
+#7)  PGW ---> DPR ----> PCRF
+#8) PGW <--- DPA <---- PCRF
 
 #################################################################
                          
@@ -135,34 +126,6 @@ def create_CCR_T():
     # ret now contains CCR Request as hex string
     return ret        
     
-def create_RAA(H):
-    # Let's build Re-Auth Answer   
-    # We need Session-Id from Request
-    RAR_avps=splitMsgAVPs(H.msg)
-    sesID=findAVP("Session-Id",RAR_avps) 
-    RAA_avps=[]
-    RAA_avps.append(encodeAVP("Origin-Host", ORIGIN_HOST))
-    RAA_avps.append(encodeAVP("Origin-Realm", ORIGIN_REALM))
-    RAA_avps.append(encodeAVP("Session-Id", sesID))
-    RAA_avps.append(encodeAVP("Result-Code", 2001))   #DIAMETER_SUCCESS 2001
-    RAA_avps.append(encodeAVP('Auth-Application-Id', 16777238))
-    RAA_avps.append(encodeAVP('Destination-Realm', 'myrealm.example'))
-    RAA_avps.append(encodeAVP('Destination-Host', 'pcrf.myrealm.example'))
-    RAA_avps.append(encodeAVP('Re-Auth-Request-Type', 0))
-    # Create message header (empty)
-    RAA=HDRItem()
-    # Set command code
-    RAA.cmd=H.cmd
-    # Set Application-id
-    RAA.appId=H.appId
-    # Set Hop-by-Hop and End-to-End from request
-    RAA.HopByHop=H.HopByHop
-    RAA.EndToEnd=H.EndToEnd
-    # Add AVPs to header and calculate remaining fields
-    ret=createRes(RAA,RAA_avps)
-    # ret now contains RAA Response as hex string
-    return ret     
-
 def create_DPR():
     # Let's build DPR
     DPR_avps=[ ]
@@ -290,62 +253,6 @@ if __name__ == "__main__":
     #print Capabilities_avps
     DEST_HOST=findAVP("Origin-Host",Capabilities_avps)
     DEST_REALM=findAVP("Origin-Realm",Capabilities_avps)
-    
-    ###########################################################
-    # NOW SEND MANUALLY test_push_RAR-U.py script
-    # or include it here within subprocess calling script from shell
-    ############################################################
-    
-    print "NOW WAITING FOR RAR-U REQUESTS"
-    print "PLEASE RUN SCRIPT MANUALLY ./test_push_RAR-U.py to continue"
-
-    # On Linux you can include subprocess to call test_push_RAR-U.py from here
-    #print "Running RAR-U script :" 
-    #subprocess.call("./test_push_RAR-U.py")
-
- 
-    ###########################################################
-    # RAR SECTION FIRST WE NEED TO SEND RAR-U FROM PCRF TO PGW
-    ###########################################################
-    # Receive response
-    received = Conn.recv(MSG_SIZE)
-    #print "Received RAR",received.encode("hex")
-    RAR=HDRItem()
-    stripHdr(RAR,received.encode("hex"))
-    
-    print "="*30
-    print "THE RAR-U REQUEST IS:"
-    msg=received.encode('hex')
-    print "="*30
-    H=HDRItem()
-    stripHdr(H,msg)
-    avps=splitMsgAVPs(H.msg)
-    cmd=dictCOMMANDcode2name(H.flags,H.cmd)
-    if cmd==ERROR:
-     print 'Unknown command',H.cmd
-    else:
-     print cmd
-     print "Hop-by-Hop=",H.HopByHop,"End-to-End=",H.EndToEnd,"ApplicationId=",H.appId
-     print "="*30
-     for avp in avps:
-    #   print "RAW AVP",avp
-        print "Decoded AVP",decodeAVP(avp)
-    print "-"*30    
-    # From RAR we needed Destination-Host and Destination-Realm
-    Capabilities_avps=splitMsgAVPs(RAR.msg)
-    #print Capabilities_avps
-    DEST_HOST=findAVP("Origin-Host",Capabilities_avps)
-    DEST_REALM=findAVP("Origin-Realm",Capabilities_avps)        
-    
-    ###########################################################
-    # Sending RAA 2001 Success to PCRF
-    ###########################################################
-    
-    msg=create_RAA(RAR)
-    # msg now contains RAA as hex string
-    logging.debug("+"*30)
-    # send data
-    Conn.send(msg.decode("hex"))
     
     
     ############################################################

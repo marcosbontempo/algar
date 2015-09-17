@@ -57,7 +57,6 @@ def create_CER():
     CER_avps=[]
     CER_avps.append(encodeAVP("Origin-Host", ORIGIN_HOST))
     CER_avps.append(encodeAVP("Origin-Realm", ORIGIN_REALM))
-    CER_avps.append(encodeAVP('Host-IP-Address', '192.168.1.105'))
     CER_avps.append(encodeAVP("Vendor-Id", 11111))
     CER_avps.append(encodeAVP("Origin-State-Id", 1))
     CER_avps.append(encodeAVP("Supported-Vendor-Id", 10415))
@@ -65,8 +64,6 @@ def create_CER():
     CER_avps.append(encodeAVP('Supported-Vendor-Id', 10415))
     CER_avps.append(encodeAVP('Supported-Vendor-Id', 11111))
     CER_avps.append(encodeAVP('Auth-Application-Id', 16777238))
-    CER_avps.append(encodeAVP('Product-Name', 'PCEF Algar'))
-
     # Create message header (empty)
     CER=HDRItem()
     # Set command code
@@ -84,14 +81,14 @@ def create_CCR_I():
     REQ_avps=[]
     REQ_avps.append(encodeAVP("Session-Id", SESSION_ID))
     REQ_avps.append(encodeAVP("Destination-Realm", DEST_REALM))
+    REQ_avps.append(encodeAVP("User-Name", IDENTITY)) 
     REQ_avps.append(encodeAVP("Origin-Host", ORIGIN_HOST))
     REQ_avps.append(encodeAVP("Origin-Realm", ORIGIN_REALM))
-    REQ_avps.append(encodeAVP('Auth-Application-Id', 16777238))
     REQ_avps.append(encodeAVP('CC-Request-Type', 1))
     REQ_avps.append(encodeAVP('CC-Request-Number', 0))
     REQ_avps.append(encodeAVP('Subscription-Id',[encodeAVP('Subscription-Id-Data', '1234567890'), encodeAVP('Subscription-Id-Type', 0)]))
-    REQ_avps.append(encodeAVP('Subscription-Id',[encodeAVP('Subscription-Id-Data', '1'), encodeAVP('Subscription-Id-Type', 1)]))
-    REQ_avps.append(encodeAVP('Framed-IP-Address', '192.168.1.105'))
+    REQ_avps.append(encodeAVP('Subscription-Id',[encodeAVP('Subscription-Id-Data', '123456789012345'), encodeAVP('Subscription-Id-Type', 1)]))
+    REQ_avps.append(encodeAVP('Framed-IP-Address', '192.168.0.1'))
     # Create message header (empty)
     CCR=HDRItem()
     # Set command code
@@ -112,13 +109,13 @@ def create_CCR_T():
     REQ_avps=[]
     REQ_avps.append(encodeAVP("Session-Id", SESSION_ID))
     REQ_avps.append(encodeAVP("Destination-Realm", DEST_REALM))
-    REQ_avps.append(encodeAVP('Auth-Application-Id', 16777238))
+    REQ_avps.append(encodeAVP("User-Name", IDENTITY)) 
     REQ_avps.append(encodeAVP("Origin-Host", ORIGIN_HOST))
     REQ_avps.append(encodeAVP("Origin-Realm", ORIGIN_REALM))
     REQ_avps.append(encodeAVP('CC-Request-Type', 3))
     REQ_avps.append(encodeAVP('CC-Request-Number', 1))
     REQ_avps.append(encodeAVP('Subscription-Id',[encodeAVP('Subscription-Id-Data', '1234567890'), encodeAVP('Subscription-Id-Type', 0)]))
-    REQ_avps.append(encodeAVP('Subscription-Id',[encodeAVP('Subscription-Id-Data', '1'), encodeAVP('Subscription-Id-Type', 1)]))
+    REQ_avps.append(encodeAVP('Subscription-Id',[encodeAVP('Subscription-Id-Data', '123456789012345'), encodeAVP('Subscription-Id-Type', 1)]))
     REQ_avps.append(encodeAVP('Framed-IP-Address', '192.168.0.1'))
     # Create message header (empty)
     CCR=HDRItem()
@@ -193,14 +190,14 @@ if __name__ == "__main__":
     #logging.basicConfig(level=logging.DEBUG)
     LoadDictionary("../dictDiameter.xml")
     ################
-    HOST="192.168.1.110"
+    HOST="127.0.0.1"
     PORT=3868
     ORIGIN_HOST="pgw.myrealm.example"
     ORIGIN_REALM="myrealm.example"
     IDENTITY="1234567890"                        
-    APPLICATION_ID=16777238               
+    APPLICATION_ID=16777238                
     # Let's assume that my Diameter messages will fit into 4k
-    MSG_SIZE=65536
+    MSG_SIZE=4096
     # Connect to server
     Conn=Connect(HOST,PORT)
     ###########################################################
