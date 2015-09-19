@@ -1,45 +1,4 @@
 #!/usr/bin/env python
-###############################################################################
-# Copyright (c) 2012, Sergej Srepfler <sergej.srepfler@gmail.com>
-#               2014, PGW client tests are added by L.Belov <lavrbel@gmail.com>
-#         February 2012 - March 2014
-#         Version 0.1.0, Last change on Mar 13, 2014
-#         This software is distributed under the terms of BSD license.    
-###############################################################################
-
-## FLOWS AND DESCRIPTION:
-
-## Capabilities Exchange:
-
-#1) PGW ---> CER -----> PCRF
-#2) PGW <--- CEA <----- PCRF
-
-## CCR Initial to PCRF, PCRF checks if user is valid in SPR DB 
-## and reply with PCC Charging-Install Rule and QoS profile settings 'basic'
-
-#3) PGW ---> CCR-I ---> PCRF
-#4)                     PCRF ---> SPR
-#5) PGW <--- CCA-I <--  PCRF <--- SPR (PCC rule)
-
-## RAR-U (Update) from PCRF to PGW (Push operation) will be sent using script test_push_RAR-U.py manually or (can be run from script)
-## with PCC Charging Remove old 'basic ' QoS profile and setting new PCC Charging-Install Rule and QoS profile settings 'highspeed'
-## PGW will reply with RAA 2001 reply
-
-
-#6) PCRF ---> RAR-U ---> PGW 
-                     
-#7) PCRF <--- RAA <---   PGW
-
-## User is logged off and now sending CCR-T (Terminate) to PCRF, PCRF terminates and reply with 2001 Success 
-
-#8) PGW ---> CCR-T ---> PCRF
-
-## Disconnect Pear Request to PCRF and 2001 Success Answer and close session
-
-#9)  PGW ---> DPR ----> PCRF
-#10) PGW <--- DPA <---- PCRF
-
-#################################################################
                          
 #Next two lines are to include parent directory for testing
 import sys
@@ -53,6 +12,7 @@ from libDiameter import  HDRItem, stripHdr
 from libDiameter import dictCOMMANDcode2name, ERROR
 from libDiameter import splitMsgAVPs, findAVP, decodeAVP
 from pcef import PCEF
+from http import HTTP
 
 # COMMUNICATION
 if __name__ == "__main__":
@@ -141,7 +101,14 @@ if __name__ == "__main__":
         
     message=message+"]"
     message=message.replace(", ]", " ]")
-    print message
+    
+    #############################################################
+    # SEND CCR-I ANSWER AS JSON
+    #############################################################
+    # Construct objects
+    http = HTTP()
+    print http.POST(pcef.OCS, message)
+
 
     # Fazer na recepcao"
     loaded_message = json.loads(str(message))
@@ -231,7 +198,6 @@ if __name__ == "__main__":
         # print "RAW AVP",avp
         print decodeAVP(avp)
     print "-"*30    
-    
     
     # And close the connection
     Conn.close()

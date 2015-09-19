@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<list key="installedFeatures">
-		<item value="com.aptana.feature.rcp:3.6.0.201410201044-7q7fFA2FEB7f0Xksz0bSy9-Gg8I4"/>
-		<item value="com.aptana.feature.studio:3.6.0.201410201030-7f7H37k7XZpgc5KV8SsTCtaC6n3z"/>
-		<item value="com.aptana.feature:3.6.2.1413590556-B07o89BabgaJTVkGD9833355984B"/>
-		<item value="com.aptana.php.feature:3.6.1.201410171731-7J7E-7ISDejnREiH"/>
-		<item value="com.aptana.pydev.feature:3.0.0.201410171802-7v--7uVyx2EKHY"/>
-		<item value="org.eclipse.emf.common:2.9.2.v20131212-0545"/>
-		<item value="org.eclipse.emf.ecore:2.9.2.v20131212-0545"/>
-		<item value="org.eclipse.help:2.0.2.v20140221-1700"/>
-		<item value="org.eclipse.jdt:3.8.1.dist-8-8nFqrFFgQGJ"/>
-		<item value="org.eclipse.pde:3.8.1.dist-7c7vFiyFALX8A"/>
-		<item value="org.eclipse.platform:4.3.2.v20140221-1852"/>
-		<item value="org.eclipse.rcp:4.3.2.v20140221-1700"/>
-		<item value="org.radrails.rails:3.6.1.1408558425-7n-7Z7oRIvAHSB7Z"/>
+		<item value="AnyEditTools:2.4.13.201508181931"/>
+		<item value="org.eclipse.egit:4.0.1.201506240215-r"/>
+		<item value="org.eclipse.emf.common:2.11.0.v20150512-0501"/>
+		<item value="org.eclipse.emf.ecore:2.11.0.v20150512-0501"/>
+		<item value="org.eclipse.epp.mpc:1.4.0.v20150618-1659"/>
+		<item value="org.eclipse.help:2.1.0.v20150603-2000"/>
+		<item value="org.eclipse.jgit:4.0.1.201506240215-r"/>
+		<item value="org.eclipse.platform:4.5.0.v20150603-2358"/>
+		<item value="org.eclipse.rcp:4.5.0.v20150603-2331"/>
+		<item value="org.python.pydev.feature:4.3.0.201508181931"/>
 	</list>
 	<section name="NewWizardAction">
 		<item value="org.python.pydev.ui.wizards.project.PythonProjectWizard" key="NewWizardSelectionPage.STORE_SELECTED_ID"/>

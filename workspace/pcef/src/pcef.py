@@ -1,60 +1,16 @@
-#!/usr/bin/env python
-###############################################################################
-# Copyright (c) 2012, Sergej Srepfler <sergej.srepfler@gmail.com>
-#               2014, PGW client tests are added by L.Belov <lavrbel@gmail.com>
-# 		February 2012 - March 2014
-# 		Version 0.1.0, Last change on Mar 13, 2014
-# 		This software is distributed under the terms of BSD license.    
-###############################################################################
-
-## FLOWS AND DESCRIPTION:
-
-## Capabilities Exchange:
-
-#1) PGW ---> CER -----> PCRF
-#2) PGW <--- CEA <----- PCRF
-
-## CCR Initial to PCRF, PCRF checks if user is valid in SPR DB 
-## and reply with PCC Charging-Install Rule and QoS profile settings 'basic'
-
-#3) PGW ---> CCR-I ---> PCRF
-#4)                     PCRF ---> SPR
-#5) PGW <--- CCA-I <--  PCRF <--- SPR (PCC rule)
-
-## RAR-U (Update) from PCRF to PGW (Push operation) will be sent using script test_push_RAR-U.py manually or (can be run from script)
-## with PCC Charging Remove old 'basic ' QoS profile and setting new PCC Charging-Install Rule and QoS profile settings 'highspeed'
-## PGW will reply with RAA 2001 reply
-
-
-#6) PCRF ---> RAR-U ---> PGW 
-                     
-#7) PCRF <--- RAA <---   PGW
-
-## User is logged off and now sending CCR-T (Terminate) to PCRF, PCRF terminates and reply with 2001 Success 
-
-#8) PGW ---> CCR-T ---> PCRF
-
-## Disconnect Pear Request to PCRF and 2001 Success Answer and close session
-
-#9)  PGW ---> DPR ----> PCRF
-#10) PGW <--- DPA <---- PCRF
-
-#################################################################
-                         
+#!/usr/bin/env python                      
 #Next two lines are to include parent directory for testing
 import sys
+import datetime
 sys.path.append("..")
-# Remove them normally
-
-#from libDiameter import *
 from libDiameter import encodeAVP, HDRItem, dictCOMMANDname2code
 from libDiameter import initializeHops, createReq, setFlags
 from libDiameter import DIAMETER_HDR_PROXIABLE
-import datetime
 
 class PCEF:
     PCEF="192.168.10.20"
     PCRF="192.168.10.10"
+    OCS="http://127.0.0.1:10000"
     PCRF_PORT=3868
     ORIGIN_HOST="pgw.myrealm.example"
     ORIGIN_REALM="myrealm.example"

@@ -15,7 +15,6 @@ import socket
 import sys
 import logging
 import time
-import string
 
 # Diameter Header fields
 
@@ -193,9 +192,9 @@ def dictVENDORid2code(vendor_id):
 def dictCOMMANDname2code(name):
     global dict_commands
     for command in dict_commands:
-         cName=command.getAttribute("name")
-         cCode=command.getAttribute("code")
-         if cName==name:
+        cName=command.getAttribute("name")
+        cCode=command.getAttribute("code")
+        if cName==name:
             return int(cCode)
     dbg="Searching CMD dictionary failed for N",name
     bailOut(dbg)
