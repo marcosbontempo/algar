@@ -1,0 +1,9 @@
+PROBLEMS_FILTERS_MIGRATE=true
+SHOW_COOLBAR=true
+SHOW_PERSPECTIVEBAR=true
+SWITCH_PERSPECTIVE_ON_PROJECT_CREATION=always
+TOOLBAR_MANUALLY_ADJUSTED=true
+eclipse.preferences.version=1
+platformState=1442618291458
+quickStart=false
+tipsAndTricks=true

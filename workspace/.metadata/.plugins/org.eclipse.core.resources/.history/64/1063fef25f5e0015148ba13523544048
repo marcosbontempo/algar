@@ -1,0 +1,236 @@
+#!/usr/bin/env python
+###############################################################################
+# Copyright (c) 2012, Sergej Srepfler <sergej.srepfler@gmail.com>
+#               2014, PGW client tests are added by L.Belov <lavrbel@gmail.com>
+#         February 2012 - March 2014
+#         Version 0.1.0, Last change on Mar 13, 2014
+#         This software is distributed under the terms of BSD license.    
+###############################################################################
+
+## FLOWS AND DESCRIPTION:
+
+## Capabilities Exchange:
+
+#1) PGW ---> CER -----> PCRF
+#2) PGW <--- CEA <----- PCRF
+
+## CCR Initial to PCRF, PCRF checks if user is valid in SPR DB 
+## and reply with PCC Charging-Install Rule and QoS profile settings 'basic'
+
+#3) PGW ---> CCR-I ---> PCRF
+#4)                     PCRF ---> SPR
+#5) PGW <--- CCA-I <--  PCRF <--- SPR (PCC rule)
+
+## RAR-U (Update) from PCRF to PGW (Push operation) will be sent using script test_push_RAR-U.py manually or (can be run from script)
+## with PCC Charging Remove old 'basic ' QoS profile and setting new PCC Charging-Install Rule and QoS profile settings 'highspeed'
+## PGW will reply with RAA 2001 reply
+
+
+#6) PCRF ---> RAR-U ---> PGW 
+                     
+#7) PCRF <--- RAA <---   PGW
+
+## User is logged off and now sending CCR-T (Terminate) to PCRF, PCRF terminates and reply with 2001 Success 
+
+#8) PGW ---> CCR-T ---> PCRF
+
+## Disconnect Pear Request to PCRF and 2001 Success Answer and close session
+
+#9)  PGW ---> DPR ----> PCRF
+#10) PGW <--- DPA <---- PCRF
+
+#################################################################
+                         
+#Next two lines are to include parent directory for testing
+import sys
+import json
+sys.path.append("..")
+# Remove them normally
+
+from libDiameter import *
+from pcef import PCEF
+
+
+if __name__ == "__main__":
+    # Construct PCEF object
+    pcef= PCEF()
+
+    #logging.basicConfig(level=logging.DEBUG)
+    LoadDictionary("../diameter/dictDiameter.xml")
+    ################
+    # Connect to server
+    Conn=Connect(pcef.HOST,pcef.PORT)
+    ###########################################################
+    # Let's build CER
+    msg=pcef.create_CER()
+    # msg now contains CER Request as hex string
+    logging.debug("+"*30)
+    # send data
+    Conn.send(msg.decode("hex"))
+    
+    ###########################################################
+    # RECEIVING CEA RESPONSE AND PARSING IT
+    ###########################################################
+    
+    # Receive response
+    received = Conn.recv(pcef.MSG_SIZE)
+    # split header and AVPs
+    CEA=HDRItem()
+    stripHdr(CEA,received.encode("hex"))
+    print "="*30
+    print "THE CEA ANSWER IS:"
+    msg=received.encode('hex')
+    print "="*30
+    H=HDRItem()
+    stripHdr(H,msg)
+    avps=splitMsgAVPs(H.msg)
+    cmd=dictCOMMANDcode2name(H.flags,H.cmd)
+    if cmd==ERROR:
+        print 'Unknown command',H.cmd
+    else:
+        print cmd
+        print "Hop-by-Hop=",H.HopByHop,"End-to-End=",H.EndToEnd,"ApplicationId=",H.appId
+        print "="*30
+    for avp in avps:
+        # print "RAW AVP",avp
+        print decodeAVP(avp)
+    print "-"*30    
+        
+    # From CEA we needed Destination-Host and Destination-Realm
+    Capabilities_avps=splitMsgAVPs(CEA.msg)
+    #print Capabilities_avps
+    DEST_HOST=findAVP("Origin-Host",Capabilities_avps)
+    DEST_REALM=findAVP("Origin-Realm",Capabilities_avps)
+    
+   
+    #############################################################
+    # CREATE CCR-I AND SEND IT TO PCRF AND PARSE IT
+    #############################################################
+    msg=pcef.create_CCR_I()
+    # msg now contains CCR as hex string
+    logging.debug("+"*30)
+    # send data
+    Conn.send(msg.decode("hex"))
+    # Receive response
+    received = Conn.recv(MSG_SIZE)
+    
+    # split header and AVPs
+    CCA=HDRItem()
+    stripHdr(CCA,received.encode("hex"))
+    print "="*30
+    print "THE CCA-I ANSWER IS:"
+    msg=received.encode('hex')
+    print "="*30
+    H=HDRItem()
+    stripHdr(H,msg)
+    avps=splitMsgAVPs(H.msg)
+    cmd=dictCOMMANDcode2name(H.flags,H.cmd)
+    if cmd==ERROR:
+        print 'Unknown command',H.cmd
+    else:
+        print cmd
+        print "Hop-by-Hop=",H.HopByHop,"End-to-End=",H.EndToEnd,"ApplicationId=",H.appId
+        print "="*30  
+    message = "["
+    for avp in avps:
+        # print "RAW AVP",avp
+        message=message+str(dumpAVP(decodeAVP(avp)))+", "
+        message=message+"]"
+        message=message.replace(", ]", " ]")
+    print message
+
+    # Fazer na recepcao"
+    loaded_message = json.loads(str(message))
+    print str(loaded_message[0])
+
+    print "-"*30    
+    # From CCA we needed Destination-Host and Destination-Realm
+    Capabilities_avps=splitMsgAVPs(CCA.msg)
+    #print Capabilities_avps
+    DEST_HOST=findAVP("Origin-Host",Capabilities_avps)
+    DEST_REALM=findAVP("Origin-Realm",Capabilities_avps)
+    
+    ############################################################
+    # Sending CCR-T message after user is logged off
+    ############################################################
+   
+    msg=create_CCR_T()
+    # msg now contains CCR as hex string
+    logging.debug("+"*30)
+    # send data
+    Conn.send(msg.decode("hex"))
+    # Receive response
+    received = Conn.recv(MSG_SIZE)
+    
+    # split header and AVPs
+    CCA=HDRItem()
+    stripHdr(CCA,received.encode("hex"))
+    print "="*30
+    print "THE CCA-T ANSWER IS:"
+    msg=received.encode('hex')
+    print "="*30
+    H=HDRItem()
+    stripHdr(H,msg)
+    avps=splitMsgAVPs(H.msg)
+    cmd=dictCOMMANDcode2name(H.flags,H.cmd)
+    if cmd==ERROR:
+        print 'Unknown command',H.cmd
+    else:
+        print cmd
+        print "Hop-by-Hop=",H.HopByHop,"End-to-End=",H.EndToEnd,"ApplicationId=",H.appId
+    print "="*30
+    for avp in avps:
+        # print "RAW AVP",avp
+        print decodeAVP(avp)
+    print "-"*30    
+    # From CCA we needed Destination-Host and Destination-Realm
+    Capabilities_avps=splitMsgAVPs(CCA.msg)
+    #print Capabilities_avps
+    DEST_HOST=findAVP("Origin-Host",Capabilities_avps)
+    DEST_REALM=findAVP("Origin-Realm",Capabilities_avps)        
+    
+    ############################################################
+    # Sending DPR message and closing connection
+    ############################################################
+    
+    # Let's build DPR
+    msg=create_DPR()
+    # msg now contains CER Request as hex string
+    logging.debug("+"*30)
+    # send data
+    Conn.send(msg.decode("hex"))
+    
+    ###########################################################
+    # RECEIVING DPA RESPONSE AND PARSING IT
+    ###########################################################
+    
+    # Receive response
+    received = Conn.recv(MSG_SIZE)
+    # split header and AVPs
+    DPR=HDRItem()
+    stripHdr(DPR,received.encode("hex"))
+    print "="*30
+    print "THE DPA ANSWER IS:"
+    msg=received.encode('hex')
+    print "="*30
+    H=HDRItem()
+    stripHdr(H,msg)
+    avps=splitMsgAVPs(H.msg)
+    cmd=dictCOMMANDcode2name(H.flags,H.cmd)
+    if cmd==ERROR:
+        print 'Unknown command',H.cmd
+    else:
+        print cmd
+        print "Hop-by-Hop=",H.HopByHop,"End-to-End=",H.EndToEnd,"ApplicationId=",H.appId
+    print "="*30
+    for avp in avps:
+        # print "RAW AVP",avp
+        print decodeAVP(avp)
+    print "-"*30    
+    
+    
+    # And close the connection
+    
+    Conn.close()
+
+
